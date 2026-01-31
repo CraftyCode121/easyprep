@@ -1,7 +1,7 @@
-from preprocess.nan_handler import SimpleImputer
-from preprocess.outlier_handler import IQROutlierHandler
-from preprocess.skew_handler import SkewHandler
-from preprocess.scaler import StandardScaler, MinMaxScaler
+from .preprocess.nan_handler import SimpleImputer
+from .preprocess.outlier_handler import IQROutlierHandler
+from .preprocess.skew_handler import SkewHandler
+from .preprocess.scaler import StandardScaler, MinMaxScaler
 import numpy as np
 
 

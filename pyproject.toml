@@ -1,10 +1,26 @@
 [project]
-name = "easyprep"
-version = "0.1.0"
+name = "ez-easyprep"                     
+version = "0.1.0"                        
 description = "Simple data preprocessing utilities for tabular data"
 readme = "README.md"
 requires-python = ">=3.9"
-dependencies = []
+dependencies = [
+    "numpy>=2.4.1"                       
+]
+
+authors = [
+    { name = "Hassan Rasheed", email = "craftycode121@gmail.com" }
+]
+
+license = { text = "MIT" }               
+keywords = ["data-preprocessing", "ml", "tabular-data"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Intended Audience :: Developers"
+]
 
 [build-system]
 requires = ["setuptools", "wheel"]
