@@ -1,5 +1,3 @@
-"""Efficient IQR-based outlier handler using NumPy."""
-
 import numpy as np
 from typing import Literal, Optional, Union
 
