@@ -9,8 +9,9 @@ from .nan_handler import SimpleImputer
 from .outlier_handler import IQROutlierHandler
 from .skew_handler import SkewHandler
 from .scaler import MinMaxScaler, StandardScaler
+from .encoder import OneHotEncoder
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 
 __all__ = [
     'SimpleImputer',
@@ -18,4 +19,5 @@ __all__ = [
     'SkewHandler',
     'MinMaxScaler',
     'StandardScaler',
+    'OneHotEncoder'
 ]

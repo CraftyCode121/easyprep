@@ -1,11 +1,11 @@
 [project]
 name = "ez-easyprep"                     
-version = "0.1.0"                        
+version = "1.1.0"                        
 description = "Simple data preprocessing utilities for tabular data"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
-    "numpy>=2.4.1"                       
+    "numpy>=1.4"                       
 ]
 
 authors = [
