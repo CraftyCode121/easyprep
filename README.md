@@ -371,4 +371,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Issues**: [GitHub Issues](https://github.com/CraftyCode121/easyprep/issues)
 ---
 
-**Made with L❤️VE by Hassan Rasheed, for developers**
+**Made with LO❤️E by Hassan Rasheed, for developers**
