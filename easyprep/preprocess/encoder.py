@@ -119,6 +119,15 @@ class OneHotEncoder:
             cats = self.categories_[col_idx]
             n_cats = len(cats)
             
+            col = X[:, col_idx]
+            unknown_mask = ~np.isin(col, cats)
+
+            if np.any(unknown_mask):
+                unknown_values = np.unique(col[unknown_mask])
+                raise ValueError(
+                    f"Unknown categories in column {col_idx}: {unknown_values}"
+                )
+            
             encoded = np.zeros((n_samples, n_cats), dtype=float)
             
             for j, cat in enumerate(cats):
