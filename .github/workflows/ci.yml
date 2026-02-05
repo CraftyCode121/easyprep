@@ -1,27 +1,21 @@
-name: CI – Multi-OS Python Tests
-
+name: CI - Multi-OS Python Tests
 on:
   push:
   pull_request:
-
 jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-22.04, windows-latest, macos-latest]
-        python-version: [3.12, 3.10]
-
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.12", "3.10"]  # ← Quote these!
     runs-on: ${{ matrix.os }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-
       - name: Cache pip
         uses: actions/cache@v3
         with:
@@ -29,11 +23,9 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -e .[dev]
-
       - name: Run tests
         run: pytest
