@@ -42,7 +42,7 @@ class TestOneHotEncoder:
     
     def test_multiple_categories(self, encoder):
         """Test encoding with more than two categories."""
-        data = np.array([['red'], ['green'], ['blue'], ['red']])
+        data = np.array([['red'], ['green'], ['blue'], ['blue']])
         result = encoder.fit_transform(data)
         
         assert result.shape == (4, 3)
