@@ -1,3 +1,4 @@
+![CI – Multi-OS Python Tests](https://github.com/CraftyCode121/easyprep/actions/workflows/ci.yml/badge.svg)
 # EasyPrep
 
 **EasyPrep** is a lightweight, NumPy-based preprocessing library that dramatically reduces boilerplate code in machine learning pipelines. It provides a unified interface for common data preprocessing tasks including missing value imputation, outlier handling, skewness correction, and feature scaling.
