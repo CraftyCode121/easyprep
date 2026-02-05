@@ -1,4 +1,4 @@
-name: CI - Multi-OS Python Tests
+name: CI – Multi-OS Python Tests
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [3.10, 3.12]
+        python-version: [3.11]
 
     runs-on: ${{ matrix.os }}
 
