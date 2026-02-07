@@ -11,7 +11,7 @@ from .skew_handler import SkewHandler
 from .scaler import MinMaxScaler, StandardScaler
 from .encoder import OneHotEncoder
 
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 
 __all__ = [
     'SimpleImputer',

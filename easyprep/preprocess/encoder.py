@@ -4,7 +4,7 @@ from typing import Optional, List
 
 class OneHotEncoder:
     """
-    Encode all categorical columns as one-hot numeric arrays.
+    Encode categorical columns as one-hot numeric arrays.
     
     Attributes
     ----------
@@ -23,26 +23,13 @@ class OneHotEncoder:
     >>> X_encoded = enc.transform(X)
     """
     
-    def __init__(self) -> None:
+    def __init__(self, indices: Optional[List[int]] = None) -> None:
         self.categories_: Optional[List[np.ndarray]] = None
         self.n_features_in_: Optional[int] = None
+        self.indices = indices if indices is not None else []
     
     def _validate_data(self, X: np.ndarray, reset: bool = True) -> np.ndarray:
-        """
-        Validate input data.
-        
-        Parameters
-        ----------
-        X : array-like
-            Input data.
-        reset : bool
-            Whether to reset n_features_in_.
-            
-        Returns
-        -------
-        X : np.ndarray
-            Validated data.
-        """
+        """Validate input data."""
         X = np.asarray(X, dtype=object)
         
         if X.size == 0:
@@ -70,53 +57,38 @@ class OneHotEncoder:
         return X
     
     def fit(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> 'OneHotEncoder':
-        """
-        Learn the categories from the data.
-        
-        Parameters
-        ----------
-        X : np.ndarray of shape (n_samples, n_features)
-            Input data.
-        y : None
-            Ignored. Present for API consistency.
-            
-        Returns
-        -------
-        self : OneHotEncoder
-        """
+        """Learn the categories from the data."""
         X = self._validate_data(X, reset=True)
         
+        if not self.indices:
+            cols_to_encode = range(X.shape[1])
+        else:
+            cols_to_encode = self.indices
+        
         self.categories_ = []
-        for col_idx in range(X.shape[1]):
+        for col_idx in cols_to_encode:
             unique_vals = np.unique(X[:, col_idx])
             self.categories_.append(unique_vals)
         
         return self
     
     def transform(self, X: np.ndarray) -> np.ndarray:
-        """
-        Transform X by one-hot encoding all columns.
-        
-        Parameters
-        ----------
-        X : np.ndarray of shape (n_samples, n_features)
-            Input data.
-            
-        Returns
-        -------
-        X_out : np.ndarray
-            One-hot encoded data.
-        """
+        """Transform X by one-hot encoding."""
         if self.categories_ is None:
             raise ValueError("Encoder not fitted. Call fit() first.")
         
         X = self._validate_data(X, reset=False)
         n_samples = X.shape[0]
         
+        if not self.indices:
+            cols_to_encode = range(X.shape[1])
+        else:
+            cols_to_encode = self.indices
+        
         parts = []
         
-        for col_idx in range(X.shape[1]):
-            cats = self.categories_[col_idx]
+        for col_idx in cols_to_encode:
+            cats = self.categories_[len(parts)]
             n_cats = len(cats)
             
             col = X[:, col_idx]
@@ -136,40 +108,19 @@ class OneHotEncoder:
             
             parts.append(encoded)
         
-        return np.hstack(parts)
+        if not self.indices: 
+            return np.hstack(parts)
+        else:
+            ohe_cols = np.hstack(parts)
+            new_X = np.delete(X, self.indices, axis=1)
+            return np.hstack([new_X, ohe_cols])
     
     def fit_transform(self, X: np.ndarray, y: Optional[np.ndarray] = None) -> np.ndarray:
-        """
-        Fit and transform in one step.
-        
-        Parameters
-        ----------
-        X : np.ndarray of shape (n_samples, n_features)
-            Input data.
-        y : None
-            Ignored. Present for API consistency.
-            
-        Returns
-        -------
-        X_out : np.ndarray
-            One-hot encoded data.
-        """
+        """Fit and transform in one step."""
         return self.fit(X, y).transform(X)
     
     def get_feature_names(self, input_features: Optional[List[str]] = None) -> List[str]:
-        """
-        Get output feature names.
-        
-        Parameters
-        ----------
-        input_features : list of str, optional
-            Names of input features. If None, uses x0, x1, ...
-            
-        Returns
-        -------
-        feature_names : list of str
-            Output feature names.
-        """
+        """Get output feature names."""
         if self.categories_ is None:
             raise ValueError("Encoder not fitted. Call fit() first.")
         
@@ -181,9 +132,12 @@ class OneHotEncoder:
                 f"but encoder expects {self.n_features_in_} features."
             )
         
+        cols_to_encode = self.indices if self.indices else range(self.n_features_in_)
+        
         feature_names = []
-        for i, cats in enumerate(self.categories_):
+        for i, col_idx in enumerate(cols_to_encode):
+            cats = self.categories_[i]
             for cat in cats:
-                feature_names.append(f"{input_features[i]}_{cat}")
+                feature_names.append(f"{input_features[col_idx]}_{cat}")
         
         return feature_names

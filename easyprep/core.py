@@ -2,7 +2,9 @@ from .preprocess.nan_handler import SimpleImputer
 from .preprocess.outlier_handler import IQROutlierHandler
 from .preprocess.skew_handler import SkewHandler
 from .preprocess.scaler import StandardScaler, MinMaxScaler
+from .preprocess.encoder import OneHotEncoder
 import numpy as np
+from typing import Optional, List
 
 
 class Easyprep:
@@ -10,15 +12,17 @@ class Easyprep:
     All-in-one preprocessing pipeline for tabular data.
     
     Automatically handles common preprocessing steps in the optimal order:
-    1. Missing value imputation
-    2. Skewness correction
-    3. Outlier handling
-    4. Feature scaling
+    1. Categorical missing value imputation (optional)
+    2. One-hot encoding (optional)
+    3. Numeric missing value imputation
+    4. Skewness correction
+    5. Outlier handling
+    6. Feature scaling
     
     Parameters
     ----------
     imputer : str or None, default='mean'
-        Strategy for imputing missing values. Options: 'mean', 'median', 
+        Strategy for imputing missing numeric values. Options: 'mean', 'median', 
         'most_frequent', 'constant', None
     outlier_handler : str or None, default='replace_mean'
         Method for handling outliers. Options: 'clip', 'remove', 'replace_mean',
@@ -28,6 +32,13 @@ class Easyprep:
         'boxcox', 'yeo-johnson', 'auto', None
     scaler : str or None, default='standard-scaler'
         Scaling method. Options: 'standard-scaler', 'minmax-scaler', None
+    encoder : str or None, default=None
+        Encoding method for categorical features. Options: 'ohe', None
+    ohe_indices : list of int or None, default=None
+        Indices of columns to one-hot encode. Required if encoder='ohe'.
+    cat_imputer : str or None, default=None
+        Strategy for imputing missing categorical values (before encoding).
+        Options: 'most_frequent', 'constant', None
     """
     
     def __init__(
@@ -36,11 +47,36 @@ class Easyprep:
         outlier_handler: str = 'replace_mean',
         skew_handler: str = 'auto',
         scaler: str = 'standard-scaler',
+        encoder: Optional[str] = None,
+        ohe_indices: Optional[List[int]] = None,
+        cat_imputer: Optional[str] = None
     ):
+        
         imputers = [None, 'mean', 'median', 'most_frequent', 'constant']
+        cat_imputers = [None, 'most_frequent', 'constant']
         outlier_handlers = [None, 'clip', 'remove', 'replace_mean', 'replace_median', 'replace_nan']
         skew_handlers = [None, 'log', 'sqrt', 'boxcox', 'yeo-johnson', 'auto']
         scalers = [None, 'standard-scaler', 'minmax-scaler']
+        encoders = [None, 'ohe']
+        
+        if cat_imputer not in cat_imputers:
+            raise ValueError(f"Invalid cat_imputer. Must be one of {cat_imputers}")
+        
+        if cat_imputer is None:
+            self.cat_imputer = None
+        else:
+            self.cat_imputer = SimpleImputer(strategy=cat_imputer)
+        
+        if encoder is None:
+            self.encoder = None
+        elif encoder not in encoders:
+            raise ValueError(f"Invalid encoder. Must be one of {encoders}")
+        elif encoder == "ohe":
+            if ohe_indices is None:
+                raise ValueError("Must specify indices for the OneHotEncoder to work")
+            self.encoder = OneHotEncoder(indices=ohe_indices)
+        else:
+            self.encoder = None
         
         if imputer not in imputers:
             raise ValueError(f"Invalid imputer. Must be one of {imputers}")
@@ -97,6 +133,14 @@ class Easyprep:
         
         X_current = X.copy()
         
+        if self.cat_imputer is not None:
+            self.cat_imputer.fit(X_current)
+            X_current = self.cat_imputer.transform(X_current)
+        
+        if self.encoder is not None:
+            self.encoder.fit(X_current)
+            X_current = self.encoder.transform(X_current)
+        
         if self.imputer is not None:
             self.imputer.fit(X_current)
             X_current = self.imputer.transform(X_current)
@@ -104,13 +148,14 @@ class Easyprep:
         if self.skew_handler is not None:
             self.skew_handler.fit(X_current)
             X_current = self.skew_handler.transform(X_current)
-        
+    
         if self.outlier_handler is not None:
             self.outlier_handler.fit(X_current)
             X_current = self.outlier_handler.transform(X_current)
         
         if self.scaler is not None:
             self.scaler.fit(X_current)
+            X_current = self.scaler.transform(X_current)
         
         return self
     
@@ -131,6 +176,13 @@ class Easyprep:
         X = self._validate_data(X, reset=False)
         
         X_current = X.copy()
+        
+        # Applying same order as fit
+        if self.cat_imputer is not None:
+            X_current = self.cat_imputer.transform(X_current)
+        
+        if self.encoder is not None:
+            X_current = self.encoder.transform(X_current)
         
         if self.imputer is not None:
             X_current = self.imputer.transform(X_current)
@@ -165,7 +217,7 @@ class Easyprep:
     
     def _validate_data(self, X: np.ndarray, reset: bool = True) -> np.ndarray:
         """Validate input data."""
-        X = np.asarray(X, dtype=np.float64)
+        X = np.asarray(X, dtype=object)
         
         if X.ndim == 1:
             X = X.reshape(-1, 1)
